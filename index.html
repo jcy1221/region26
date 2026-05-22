@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>유진기업 사업장별 선거구 대시보드</title>
+    <title>사업장별 선거구 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -36,9 +36,9 @@
 
     <div class="max-w-6xl mx-auto">
         <!-- Header Section -->
-        <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-                <h1 class="text-3xl font-bold text-slate-900 mb-2">🏢 유진기업 사업장별 선거구 대시보드</h1>
+                <h1 class="text-3xl font-bold text-slate-900 mb-2">🏢 사업장별 선거구 대시보드</h1>
                 <p class="text-slate-500 font-medium">2026년 제9회 전국동시지방선거</p>
             </div>
             
@@ -56,6 +56,12 @@
             </div>
         </div>
 
+        <!-- Company Toggle Tabs -->
+        <div class="flex bg-slate-200/60 p-1 rounded-xl w-full md:w-fit mb-6 shadow-inner">
+            <button id="tab-eugene" class="flex-1 md:w-32 py-2 text-sm font-bold rounded-lg bg-white text-blue-700 shadow-sm transition-all border border-slate-100">유진기업</button>
+            <button id="tab-tongyang" class="flex-1 md:w-32 py-2 text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-700 transition-all border border-transparent">동양</button>
+        </div>
+
         <!-- Dashboard Content (List View) -->
         <div id="dashboard-container" class="space-y-4">
             <!-- JavaScript will populate this -->
@@ -63,137 +69,114 @@
     </div>
 
     <script>
-        // 후보자 데이터 통합 관리 및 주요 공약 (건설, 부동산, 개발 중심 필터링)
-        // 출처: 2026.05 중앙선관위 및 주요 포털 검색 결과 종합
+        // 현재 선택된 회사 상태
+        let currentCompany = '유진';
+
+        // ------------------------------------------------------------------
+        // 선거구 및 후보자 데이터 (신규 추가된 부울경/제주 등 포함)
+        // ------------------------------------------------------------------
         const electionData = {
             // --- 광역단체장 ---
+            "서울특별시장": [
+                { party: "더불어민주당", name: "박주민", pledges: ["여의도 금융특구 활성화 및 글로벌 금융허브 도약"] },
+                { party: "국민의힘", name: "오세훈", pledges: ["그레이트 한강 프로젝트 연계 여의도 수변 개발"] }
+            ],
             "경기도지사": [
-                { party: "더불어민주당", name: "추미애", pledges: ["경기북부 평화경제특구 조성", "경기동북부 규제 완화 및 맞춤형 인프라 개발"], source: "연합뉴스/경기일보 (26.05.22)" },
-                { party: "국민의힘", name: "양향자", pledges: ["'첨단도지사' 표방, SK하이닉스 등 반도체 클러스터 기반 인프라 신속 확충", "민간공항 유치 및 관련 산단 조성"], source: "연합뉴스/OBS토론 (26.05.22)" },
-                { party: "개혁신당", name: "조응천", pledges: ["화성 동탄 등 경기 남부 신도시 인프라 조기 완공", "구도심 정비 및 노후계획도시 재정비"], source: "뉴시스 (26.05.21)" }
+                { party: "더불어민주당", name: "추미애", pledges: ["경기북부 평화경제특구 조성", "경기동북부 규제 완화 및 맞춤형 인프라 개발"] },
+                { party: "국민의힘", name: "양향자", pledges: ["'첨단도지사' 표방, SK하이닉스 등 반도체 클러스터 기반 인프라 신속 확충", "민간공항 유치 및 관련 산단 조성"] },
+                { party: "개혁신당", name: "조응천", pledges: ["화성 동탄 등 경기 남부 신도시 인프라 조기 완공", "구도심 정비 및 노후계획도시 재정비"] }
             ],
             "인천광역시장": [
-                { party: "더불어민주당", name: "박찬대", pledges: ["동부간선도로(인천 신항~남동산단~검단) 신설", "제2경인선 조기 착공", "생애주기 맞춤형 주택 공급"], source: "기호일보 (26.05.13)" },
-                { party: "국민의힘", name: "유정복", pledges: ["인천 5대 수(水)세권 벨트 구축 (제물포 르네상스 등)", "송도·청라 등 해양·생태 워터프런트 조성"], source: "Daum (26.05.13)" },
-                { party: "개혁신당", name: "이기붕", pledges: [], source: "" }
+                { party: "더불어민주당", name: "박찬대", pledges: ["동부간선도로(인천 신항~남동산단~검단) 신설", "제2경인선 조기 착공", "생애주기 맞춤형 주택 공급"] },
+                { party: "국민의힘", name: "유정복", pledges: ["인천 5대 수(水)세권 벨트 구축 (제물포 르네상스 등)", "송도·청라 등 해양·생태 워터프런트 조성"] }
             ],
             "충청남도지사": [
-                { party: "더불어민주당", name: "박수현", pledges: ["지역 균형 발전 및 교통 인프라 국비 확보", "서해안 스마트 산업벨트 구축"], source: "KBS 여론조사 (26.05)" },
-                { party: "국민의힘", name: "김태흠", pledges: ["천안·아산 150만 복합문화 도시 육성", "아산 북부권 국제 신도시 조성 (한국형 실리콘밸리)"], source: "뉴스1 (26.05.15)" }
+                { party: "더불어민주당", name: "박수현", pledges: ["지역 균형 발전 및 교통 인프라 국비 확보", "서해안 스마트 산업벨트 구축"] },
+                { party: "국민의힘", name: "김태흠", pledges: ["천안·아산 150만 복합문화 도시 육성", "아산 북부권 국제 신도시 조성"] }
             ],
             "강원특별자치도지사": [
-                { party: "더불어민주당", name: "우상호", pledges: ["접경지역 평화산업단지 유치"], source: "지역 언론 종합" },
-                { party: "국민의힘", name: "김진태", pledges: ["춘천/원주권 첨단 산단 및 광역교통망 신설", "설악산 케이블카 등 관광 인프라 개발"], source: "지역 언론 종합" }
+                { party: "더불어민주당", name: "우상호", pledges: ["접경지역 평화산업단지 유치 및 도로망 연결"] },
+                { party: "국민의힘", name: "김진태", pledges: ["춘천/원주권 첨단 산단 및 광역교통망 신설", "설악산 케이블카 등 관광 인프라 개발"] }
             ],
             "광주광역시장": [
-                { party: "더불어민주당", name: "강기정", pledges: ["복합쇼핑몰 주변 도로 및 인프라 대대적 정비", "AI 산업단지 2단계 부지 조성"], source: "지역 언론 종합" },
-                { party: "국민의힘", name: "주기환", pledges: ["광주 지하철 순환선 조기 완공 지원"], source: "지역 언론 종합" }
+                { party: "더불어민주당", name: "강기정", pledges: ["복합쇼핑몰 주변 도로 및 인프라 대대적 정비", "AI 산업단지 2단계 부지 조성"] },
+                { party: "국민의힘", name: "주기환", pledges: ["광주 지하철 순환선 조기 완공 지원"] }
             ],
             "전라남도지사": [
-                { party: "더불어민주당", name: "김영록", pledges: ["남해안 남중권 해양관광벨트 개발 및 도로망 확충"], source: "지역 언론 종합" },
-                { party: "국민의힘", name: "이정현", pledges: ["전남권 의대 유치 및 병원 부지 개발"], source: "지역 언론 종합" }
+                { party: "더불어민주당", name: "김영록", pledges: ["남해안 남중권 해양관광벨트 개발 및 도로망 확충"] },
+                { party: "국민의힘", name: "이정현", pledges: ["전남권 의대 유치 및 병원 부지 개발"] }
             ],
             "전북특별자치도지사": [
-                { party: "더불어민주당", name: "이원택", pledges: ["새만금 연계 산단 활성화 및 배후도시 건설"], source: "KBS 여론조사 (26.05)" },
-                { party: "무소속", name: "김관영", pledges: ["대기업 유치 및 맞춤형 공장 부지 무상 제공 수준 혜택"], source: "KBS 여론조사 (26.05)" }
+                { party: "더불어민주당", name: "이원택", pledges: ["새만금 연계 산단 활성화 및 배후도시 건설"] },
+                { party: "무소속", name: "김관영", pledges: ["대기업 유치 및 맞춤형 공장 부지 무상 제공 수준 혜택"] }
             ],
             "세종특별자치시장": [
-                { party: "더불어민주당", name: "조상호", pledges: ["행정수도 완성 및 신규 주거지구 추가 개발"], source: "KBS 여론조사 (26.05)" },
-                { party: "국민의힘", name: "최민호", pledges: ["자족기능 강화를 위한 산단 인허가 단축 및 규제 완화"], source: "KBS 여론조사 (26.05)" }
+                { party: "더불어민주당", name: "조상호", pledges: ["행정수도 완성 및 신규 주거지구 추가 개발"] },
+                { party: "국민의힘", name: "최민호", pledges: ["자족기능 강화를 위한 산단 인허가 단축 및 규제 완화"] }
+            ],
+            "제주특별자치도지사": [
+                { party: "더불어민주당", name: "오영훈", pledges: ["15분 도시 조성을 위한 도로망 개편 및 인프라 확충"] },
+                { party: "국민의힘", name: "허향진", pledges: ["제2공항 건설 조기 추진 및 배후도시 개발"] }
+            ],
+            "경상북도지사": [
+                { party: "더불어민주당", name: "임미애", pledges: ["신재생에너지 특화 산업단지 조성"] },
+                { party: "국민의힘", name: "이철우", pledges: ["대구경북 통합신공항 연계 교통망 구축 및 배후 물류단지 개발"] }
+            ],
+            "경상남도지사": [
+                { party: "더불어민주당", name: "김두관", pledges: ["부울경 메가시티 재추진 및 인프라 통합 구축"] },
+                { party: "국민의힘", name: "박완수", pledges: ["우주항공복합도시 인프라 조기 확충"] }
+            ],
+            "울산광역시장": [
+                { party: "더불어민주당", name: "송철호", pledges: ["부유식 해상풍력 연계 산업단지 조성"] },
+                { party: "국민의힘", name: "김두겸", pledges: ["그린벨트 대폭 해제 및 신산업단지 적기 공급"] }
+            ],
+            "부산광역시장": [
+                { party: "더불어민주당", name: "최인호", pledges: ["가덕도 신공항 배후도시 건설 및 철도망 확충"] },
+                { party: "국민의힘", name: "박형준", pledges: ["북항 3단계 재개발 신속 추진 및 글로벌 허브도시 도약"] }
             ],
 
             // --- 기초단체장 (사업장 소재지 중심) ---
-            "부천시장": [
-                { party: "더불어민주당", name: "조용익", pledges: ["1기 신도시(중동) 재건축 신속 추진 및 용적률 상향", "대장신도시 첨단산업단지 조성"] },
-                { party: "국민의힘", name: "서영석", pledges: ["경인전철 지하화 및 상부 부지 복합개발"] }
-            ],
-            "고양시장": [
-                { party: "더불어민주당", name: "이재준", pledges: ["일산 테크노밸리 조기 완공 및 기업 유치"] },
-                { party: "국민의힘", name: "이동환", pledges: ["1기 신도시 재건축 선도지구 지정 및 규제 제로화", "경제자유구역 지정에 따른 대규모 개발"] }
-            ],
-            "남양주시장": [
-                { party: "더불어민주당", name: "조광한", pledges: ["왕숙신도시 기업 유치 및 자족용지 확대"] },
-                { party: "국민의힘", name: "주광덕", pledges: ["GTX-B 역세권 고밀도 복합개발", "수석대교 조기 착공"] }
-            ],
-            "포천시장": [
-                { party: "더불어민주당", name: "박윤국", pledges: ["전철 7호선 연장선 역세권 개발"] },
-                { party: "국민의힘", name: "백영현", pledges: ["드론 첨단산업단지 조성 및 산단 도로 정비"] }
-            ],
-            "동두천시장": [
-                { party: "더불어민주당", name: "최용덕", pledges: ["미군 공여지 반환 및 국가주도 개발"] },
-                { party: "국민의힘", name: "박형덕", pledges: ["국가산업단지 확대 및 건축 규제 완화"] }
-            ],
-            "춘천시장": [
-                { party: "더불어민주당", name: "육동한", pledges: ["기업혁신파크 진입도로 등 인프라 우선 구축"] },
-                { party: "국민의힘", name: "최동용", pledges: ["구도심 재개발 및 관광지구 용적률 완화"] }
-            ],
-            "용인시장": [
-                { party: "더불어민주당", name: "백군기", pledges: ["플랫폼시티 공공개발 및 교통망 확충"] },
-                { party: "국민의힘", name: "이상일", pledges: ["남사·이동 반도체 국가산단 신속 인허가 지원", "반도체 고속도로 민자 유치"] }
-            ],
-            "광주시장": [
-                { party: "더불어민주당", name: "신동헌", pledges: ["역세권 2단계 도시개발사업 신속 추진"] },
-                { party: "국민의힘", name: "방세환", pledges: ["각종 중첩규제(상수원 등) 철폐 및 민간개발 활성화"] }
-            ],
-            "안산시장": [
-                { party: "더불어민주당", name: "제종길", pledges: ["반월산단 노후 기반시설 대대적 정비"] },
-                { party: "국민의힘", name: "이민근", pledges: ["초지역세권 복합개발 및 신안산선 적기 개통"] }
-            ],
-            "화성시장": [
-                { party: "더불어민주당", name: "정명근", pledges: ["화성국제테마파크 조기 착공 지원"] },
-                { party: "국민의힘", name: "구혁모", pledges: ["동탄-향남간 도로망 신설 및 서해안선 인프라 확충"] }
-            ],
-            "안성시장": [
-                { party: "더불어민주당", name: "김보라", pledges: ["안성역세권 개발 및 물류단지 교통망 정비"] },
-                { party: "국민의힘", name: "이영찬", pledges: ["동부권 일반산업단지 추가 조성 및 인허가 단축"] }
-            ],
-            "파주시장": [
-                { party: "더불어민주당", name: "김경일", pledges: ["메디컬클러스터 및 운정테크노밸리 부지 조성"] },
-                { party: "국민의힘", name: "조병국", pledges: ["평화경제특구 지정 및 접경지 규제 완화"] }
-            ],
-            "천안시장": [
-                { party: "더불어민주당", name: "이재관", pledges: ["성환 종축장 부지 국가산단 조기 착공"] },
-                { party: "국민의힘", name: "박상돈", pledges: ["천안역세권 도시재생 혁신지구 개발"] }
-            ],
-            "당진시장": [
-                { party: "더불어민주당", name: "김기재", pledges: ["석문국가산단 인프라 고도화"] },
-                { party: "국민의힘", name: "오성환", pledges: ["해양레저관광단지 조성 및 기업 유치용 부지 확충"] }
-            ],
-            "공주시장": [
-                { party: "더불어민주당", name: "김정섭", pledges: ["송선·동현 신도시 개발 재추진"] },
-                { party: "국민의힘", name: "최원철", pledges: ["백제문화권 관광지구 개발 및 인허가 완화"] }
-            ],
-            "나주시장": [
-                { party: "더불어민주당", name: "윤병태", pledges: ["에너지국가산단 2단계 조성 및 정주여건 개선"] },
-                { party: "무소속", name: "강인규", pledges: ["빛가람혁신도시 정주 인프라 추가 확충"] }
-            ],
-            "군산시장": [
-                { party: "더불어민주당", name: "강임준", pledges: ["새만금 이차전지 특화단지 관련 도로망 확충"] },
-                { party: "무소속", name: "진희완", pledges: ["현대중공업 군산조선소 배후단지 활성화"] }
-            ],
-            "인천 동구청장": [
-                { party: "더불어민주당", name: "남궁형", pledges: ["동인천역 북광장 복합개발"] },
-                { party: "국민의힘", name: "김찬진", pledges: ["만석동 원도심 재개발 및 공업지역 정비"] }
-            ],
-            "인천 서구청장": [
-                { party: "더불어민주당", name: "김종인", pledges: ["검단신도시 교통 인프라 적기 구축"] },
-                { party: "국민의힘", name: "강범석", pledges: ["루원시티 랜드마크 타워 건립 지원"] }
-            ],
-            "인천 남동구청장": [
-                { party: "더불어민주당", name: "이강호", pledges: ["남동산단 스마트 산단 전환 및 노후시설 교체"] },
-                { party: "국민의힘", name: "박종효", pledges: ["소래포구 국가어항 개발 및 주변 레저부지 조성"] }
-            ],
-            "인천 중구청장": [
-                { party: "더불어민주당", name: "홍인성", pledges: ["영종국제도시 복합리조트 배후단지 조성"] },
-                { party: "국민의힘", name: "김정헌", pledges: ["내항 1·8부두 재개발 신속 추진"] }
-            ],
-            "광주 광산구청장": [
-                { party: "더불어민주당", name: "박병규", pledges: ["송정역세권 투자선도지구 개발"] },
-                { party: "무소속", name: "김삼호", pledges: ["평동·하남산단 진입도로 확장"] }
-            ]
+            "영등포구청장": [{ party: "더불어민주당", name: "채현일", pledges: ["영등포역 일대 도심재생 및 메디컬 클러스터 조성"] }, { party: "국민의힘", name: "최호권", pledges: ["여의도 노후 아파트 재건축 신속 추진 및 고도제한 완화"] }],
+            "부천시장": [{ party: "더불어민주당", name: "조용익", pledges: ["1기 신도시(중동) 재건축 신속 추진", "대장신도시 첨단산업단지 조성"] }, { party: "국민의힘", name: "서영석", pledges: ["경인전철 지하화 및 복합개발"] }],
+            "고양시장": [{ party: "더불어민주당", name: "이재준", pledges: ["일산 테크노밸리 조기 완공"] }, { party: "국민의힘", name: "이동환", pledges: ["1기 신도시 재건축 선도지구 지정", "경제자유구역 개발"] }],
+            "남양주시장": [{ party: "더불어민주당", name: "조광한", pledges: ["왕숙신도시 기업 유치 및 자족용지 확대"] }, { party: "국민의힘", name: "주광덕", pledges: ["GTX-B 역세권 고밀도 복합개발"] }],
+            "포천시장": [{ party: "더불어민주당", name: "박윤국", pledges: ["전철 7호선 연장선 역세권 개발"] }, { party: "국민의힘", name: "백영현", pledges: ["드론 첨단산업단지 조성"] }],
+            "동두천시장": [{ party: "더불어민주당", name: "최용덕", pledges: ["미군 공여지 반환 및 국가주도 개발"] }, { party: "국민의힘", name: "박형덕", pledges: ["국가산업단지 확대 및 건축 규제 완화"] }],
+            "춘천시장": [{ party: "더불어민주당", name: "육동한", pledges: ["기업혁신파크 진입도로 구축"] }, { party: "국민의힘", name: "최동용", pledges: ["구도심 재개발 및 용적률 완화"] }],
+            "용인시장": [{ party: "더불어민주당", name: "백군기", pledges: ["플랫폼시티 공공개발"] }, { party: "국민의힘", name: "이상일", pledges: ["남사·이동 반도체 국가산단 신속 인허가", "반도체 고속도로 건설"] }],
+            "광주시장": [{ party: "더불어민주당", name: "신동헌", pledges: ["역세권 2단계 도시개발사업 추진"] }, { party: "국민의힘", name: "방세환", pledges: ["각종 중첩규제 철폐 및 민간개발 활성화"] }],
+            "안산시장": [{ party: "더불어민주당", name: "제종길", pledges: ["반월산단 노후 기반시설 대대적 정비"] }, { party: "국민의힘", name: "이민근", pledges: ["초지역세권 복합개발 및 신안산선 개통"] }],
+            "화성시장": [{ party: "더불어민주당", name: "정명근", pledges: ["화성국제테마파크 조기 착공 지원"] }, { party: "국민의힘", name: "구혁모", pledges: ["동탄-향남간 도로망 신설"] }],
+            "안성시장": [{ party: "더불어민주당", name: "김보라", pledges: ["안성역세권 개발 및 물류단지 교통망 정비"] }, { party: "국민의힘", name: "이영찬", pledges: ["동부권 일반산업단지 추가 조성"] }],
+            "파주시장": [{ party: "더불어민주당", name: "김경일", pledges: ["메디컬클러스터 및 운정테크노밸리 부지 조성"] }, { party: "국민의힘", name: "조병국", pledges: ["평화경제특구 지정 및 접경지 규제 완화"] }],
+            "천안시장": [{ party: "더불어민주당", name: "이재관", pledges: ["성환 종축장 부지 국가산단 조기 착공"] }, { party: "국민의힘", name: "박상돈", pledges: ["천안역세권 도시재생 혁신지구 개발"] }],
+            "당진시장": [{ party: "더불어민주당", name: "김기재", pledges: ["석문국가산단 인프라 고도화"] }, { party: "국민의힘", name: "오성환", pledges: ["해양레저관광단지 조성 및 기업 유치용 부지 확충"] }],
+            "공주시장": [{ party: "더불어민주당", name: "김정섭", pledges: ["송선·동현 신도시 개발 재추진"] }, { party: "국민의힘", name: "최원철", pledges: ["백제문화권 관광지구 개발 및 인허가 완화"] }],
+            "나주시장": [{ party: "더불어민주당", name: "윤병태", pledges: ["에너지국가산단 2단계 조성"] }, { party: "무소속", name: "강인규", pledges: ["빛가람혁신도시 정주 인프라 추가 확충"] }],
+            "군산시장": [{ party: "더불어민주당", name: "강임준", pledges: ["새만금 이차전지 특화단지 관련 도로망 확충"] }, { party: "무소속", name: "진희완", pledges: ["현대중공업 군산조선소 배후단지 활성화"] }],
+            "인천 동구청장": [{ party: "더불어민주당", name: "남궁형", pledges: ["동인천역 북광장 복합개발"] }, { party: "국민의힘", name: "김찬진", pledges: ["만석동 원도심 재개발 및 공업지역 정비"] }],
+            "인천 서구청장": [{ party: "더불어민주당", name: "김종인", pledges: ["검단신도시 교통 인프라 적기 구축"] }, { party: "국민의힘", name: "강범석", pledges: ["루원시티 랜드마크 타워 건립 지원"] }],
+            "인천 남동구청장": [{ party: "더불어민주당", name: "이강호", pledges: ["남동산단 스마트 산단 전환 및 노후시설 교체"] }, { party: "국민의힘", name: "박종효", pledges: ["소래포구 국가어항 개발 및 주변 레저부지 조성"] }],
+            "인천 중구청장": [{ party: "더불어민주당", name: "홍인성", pledges: ["영종국제도시 복합리조트 배후단지 조성"] }, { party: "국민의힘", name: "김정헌", pledges: ["내항 1·8부두 재개발 신속 추진"] }],
+            "광주 광산구청장": [{ party: "더불어민주당", name: "박병규", pledges: ["송정역세권 투자선도지구 개발"] }, { party: "무소속", name: "김삼호", pledges: ["평동·하남산단 진입도로 확장"] }],
+            
+            // --- 동양사업장 전용 추가 기초단체장 ---
+            "군포시장": [{ party: "더불어민주당", name: "한대희", pledges: ["금정역 환승센터 입체화 추진"] }, { party: "국민의힘", name: "하은호", pledges: ["1기 신도시(산본) 노후계획도시 정비사업 가속화"] }],
+            "김포시장": [{ party: "더불어민주당", name: "정하영", pledges: ["김포한강2 컴팩트시티 인프라 적기 구축"] }, { party: "국민의힘", name: "김병수", pledges: ["서울 5호선 김포 연장 및 역세권 개발"] }],
+            "원주시장": [{ party: "더불어민주당", name: "구자열", pledges: ["혁신도시-기업도시 연결 간선도로 신설"] }, { party: "국민의힘", name: "원강수", pledges: ["반도체 클러스터 부지 조성 및 공장 신설 규제 완화"] }],
+            "아산시장": [{ party: "더불어민주당", name: "오세현", pledges: ["탕정2지구 도시개발사업 신속 추진"] }, { party: "국민의힘", name: "박경귀", pledges: ["아산만권 베이밸리 메가시티 배후산단 조성"] }],
+            "완주군수": [{ party: "더불어민주당", name: "유희태", pledges: ["수소특화 국가산단 조기 착공"] }, { party: "무소속", name: "국영석", pledges: ["삼봉지구 배후 주거단지 인프라 개선"] }],
+            "경산시장": [{ party: "더불어민주당", name: "전상헌", pledges: ["지식산업지구 2단계 부지 분양 및 도로망 확충"] }, { party: "국민의힘", name: "조현일", pledges: ["대구도시철도 경산 연장선 역세권 고밀도 개발"] }],
+            "창원시장": [{ party: "더불어민주당", name: "허성무", pledges: ["마산해양신도시 민간사업자 공모 및 개발"] }, { party: "국민의힘", name: "홍남표", pledges: ["창원국가산단 2.0 (방산/원전) 신규 부지 적기 공급"] }],
+            "김해시장": [{ party: "더불어민주당", name: "허성곤", pledges: ["김해테크노밸리 일반산단 도로 등 인프라 고도화"] }, { party: "국민의힘", name: "홍태용", pledges: ["동북아 물류 플랫폼 거점 산단 지정"] }],
+            "양산시장": [{ party: "더불어민주당", name: "김일권", pledges: ["가산일반산단 스마트물류단지 조성"] }, { party: "국민의힘", name: "나동연", pledges: ["사송신도시 양방향 IC 신설 및 하천 정비"] }],
+            "울산 울주군수": [{ party: "더불어민주당", name: "이선호", pledges: ["KTX역세권 복합특화단지 개발"] }, { party: "국민의힘", name: "이순걸", pledges: ["남부권 신도시 조성 및 공영개발 방식 도입"] }],
+            "부산 강서구청장": [{ party: "더불어민주당", name: "노기태", pledges: ["에코델타시티 산업물류용지 적기 공급"] }, { party: "국민의힘", name: "김형찬", pledges: ["명지국제신도시 2단계 부지 조성 및 가덕신공항 연결도로 확충"] }],
+            "부산 서구청장": [{ party: "더불어민주당", name: "정진영", pledges: ["구덕운동장 부지 복합개발"] }, { party: "국민의힘", name: "공한수", pledges: ["남항재개발 및 송도선 트램 노선 확충"] }],
+            "부산 기장군수": [{ party: "더불어민주당", name: "우성빈", pledges: ["일광신도시 배후 교통망(우회도로) 신설"] }, { party: "국민의힘", name: "정종복", pledges: ["동남권 방사선 의·과학 산단 인프라 구축"] }]
         };
 
-        // 기본적으로 모든 기초단체장(시장/구청장)은 공천중으로 세팅
+        // 데이터를 찾지 못할 경우 기본값
         function getCandidates(electionTitle) {
             if (electionTitle === "해당없음") return [];
             return electionData[electionTitle] || [
@@ -202,7 +185,6 @@
             ];
         }
 
-        // 정당별 텍스트 색상
         function getPartyColor(party) {
             if(party.includes('민주당')) return 'text-blue-600';
             if(party.includes('국민의힘')) return 'text-red-600';
@@ -212,35 +194,61 @@
             return 'text-slate-600';
         }
 
-        // 사업장 전체 데이터
+        // ------------------------------------------------------------------
+        // 사업장 전체 데이터 (유진 / 동양 통합)
+        // ------------------------------------------------------------------
         const factories = [
-            { name: "부천", address: "경기도 부천시 석천로 457 (삼정동)", metro: "경기도지사", basic: "부천시장" },
-            { name: "강서", address: "경기도 부천시 오정로 189 (내동)", metro: "경기도지사", basic: "부천시장" },
-            { name: "인천", address: "인천광역시 동구 방축로 62번길 37", metro: "인천광역시장", basic: "인천 동구청장" },
-            { name: "서인천", address: "인천광역시 서구 약암로 1 (오류동)", metro: "인천광역시장", basic: "인천 서구청장" },
-            { name: "송도", address: "인천광역시 남동구 에코중앙로 11", metro: "인천광역시장", basic: "인천 남동구청장" },
-            { name: "서서울", address: "경기도 고양시 덕양구 통일로 493번길 35", metro: "경기도지사", basic: "고양시장" },
-            { name: "동서울", address: "경기도 남양주시 진건읍 진관산단로 59번길 21", metro: "경기도지사", basic: "남양주시장" },
-            { name: "남양주", address: "경기도 포천시 내촌면 금강로 2199-43", metro: "경기도지사", basic: "포천시장" },
-            { name: "동두천", address: "경기도 동두천시 갈마지길 205 (상패동)", metro: "경기도지사", basic: "동두천시장" },
-            { name: "춘천", address: "강원도 춘천시 동산면 영서로 915", metro: "강원특별자치도지사", basic: "춘천시장" },
-            { name: "수지", address: "경기도 용인시 처인구 모현읍 포은대로 890", metro: "경기도지사", basic: "용인시장" },
-            { name: "광주", address: "경기도 광주시 오포읍 문현로 91-44", metro: "경기도지사", basic: "광주시장" },
-            { name: "안산", address: "경기도 안산시 상록구 반월천북길 188", metro: "경기도지사", basic: "안산시장" },
-            { name: "수원", address: "경기도 화성시 향남읍 서봉로 720", metro: "경기도지사", basic: "화성시장" },
-            { name: "지구", address: "경기도 화성시 향남읍 발안로464번길 25-41", metro: "경기도지사", basic: "화성시장" },
-            { name: "평택", address: "경기도 안성시 원곡면 청원로 1752-55", metro: "경기도지사", basic: "안성시장" },
-            { name: "안성", address: "경기도 안성시 대덕면 만세로 145", metro: "경기도지사", basic: "안성시장" },
-            { name: "수원A", address: "경기도 화성시 향남읍 서봉로 714", metro: "경기도지사", basic: "화성시장" },
-            { name: "파주석산", address: "경기도 파주시 법원읍 술이홀로1282번길 295", metro: "경기도지사", basic: "파주시장" },
-            { name: "모래부두", address: "인천광역시 중구 서해대로 7", metro: "인천광역시장", basic: "인천 중구청장" },
-            { name: "천안", address: "충청남도 천안시 동남구 풍세면 풍세로 550", metro: "충청남도지사", basic: "천안시장" },
-            { name: "당진", address: "충청남도 당진시 고대면 고대로 158", metro: "충청남도지사", basic: "당진시장" },
-            { name: "공주석산", address: "충청남도 공주시 이인면 검바위로 95-39", metro: "충청남도지사", basic: "공주시장" },
-            { name: "세종", address: "세종특별자치시 금남면 안금로 351-43", metro: "세종특별자치시장", basic: "해당없음" },
-            { name: "K광주", address: "광주광역시 광산구 풍영정길 201", metro: "광주광역시장", basic: "광주 광산구청장" },
-            { name: "나주", address: "전라남도 나주시 남평읍 교원교촌길 22-104", metro: "전라남도지사", basic: "나주시장" },
-            { name: "군산", address: "전라북도 군산시 외항안길 210", metro: "전북특별자치도지사", basic: "군산시장" }
+            // --- 유진기업 ---
+            { company: "유진", name: "본사", address: "서울특별시 영등포구 여의대로 108 파크원 타워1 , 23층", metro: "서울특별시장", basic: "영등포구청장" },
+            { company: "유진", name: "부천", address: "경기도 부천시 석천로 457 (삼정동)", metro: "경기도지사", basic: "부천시장" },
+            { company: "유진", name: "강서", address: "경기도 부천시 오정로 189 (내동)", metro: "경기도지사", basic: "부천시장" },
+            { company: "유진", name: "인천", address: "인천광역시 동구 방축로 62번길 37", metro: "인천광역시장", basic: "인천 동구청장" },
+            { company: "유진", name: "서인천", address: "인천광역시 서구 약암로 1 (오류동)", metro: "인천광역시장", basic: "인천 서구청장" },
+            { company: "유진", name: "송도", address: "인천광역시 남동구 에코중앙로 11", metro: "인천광역시장", basic: "인천 남동구청장" },
+            { company: "유진", name: "서서울", address: "경기도 고양시 덕양구 통일로 493번길 35", metro: "경기도지사", basic: "고양시장" },
+            { company: "유진", name: "동서울", address: "경기도 남양주시 진건읍 진관산단로 59번길 21", metro: "경기도지사", basic: "남양주시장" },
+            { company: "유진", name: "남양주", address: "경기도 포천시 내촌면 금강로 2199-43", metro: "경기도지사", basic: "포천시장" },
+            { company: "유진", name: "동두천", address: "경기도 동두천시 갈마지길 205 (상패동)", metro: "경기도지사", basic: "동두천시장" },
+            { company: "유진", name: "춘천", address: "강원도 춘천시 동산면 영서로 915", metro: "강원특별자치도지사", basic: "춘천시장" },
+            { company: "유진", name: "수지", address: "경기도 용인시 처인구 모현읍 포은대로 890", metro: "경기도지사", basic: "용인시장" },
+            { company: "유진", name: "광주", address: "경기도 광주시 오포읍 문현로 91-44", metro: "경기도지사", basic: "광주시장" },
+            { company: "유진", name: "안산", address: "경기도 안산시 상록구 반월천북길 188", metro: "경기도지사", basic: "안산시장" },
+            { company: "유진", name: "수원", address: "경기도 화성시 향남읍 서봉로 720", metro: "경기도지사", basic: "화성시장" },
+            { company: "유진", name: "지구", address: "경기도 화성시 향남읍 발안로464번길 25-41", metro: "경기도지사", basic: "화성시장" },
+            { company: "유진", name: "평택", address: "경기도 안성시 원곡면 청원로 1752-55", metro: "경기도지사", basic: "안성시장" },
+            { company: "유진", name: "안성", address: "경기도 안성시 대덕면 만세로 145", metro: "경기도지사", basic: "안성시장" },
+            { company: "유진", name: "수원A", address: "경기도 화성시 향남읍 서봉로 714", metro: "경기도지사", basic: "화성시장" },
+            { company: "유진", name: "파주석산", address: "경기도 파주시 법원읍 술이홀로1282번길 295", metro: "경기도지사", basic: "파주시장" },
+            { company: "유진", name: "모래부두", address: "인천광역시 중구 서해대로 7", metro: "인천광역시장", basic: "인천 중구청장" },
+            { company: "유진", name: "천안", address: "충청남도 천안시 동남구 풍세면 풍세로 550", metro: "충청남도지사", basic: "천안시장" },
+            { company: "유진", name: "당진", address: "충청남도 당진시 고대면 고대로 158", metro: "충청남도지사", basic: "당진시장" },
+            { company: "유진", name: "공주석산", address: "충청남도 공주시 이인면 검바위로 95-39", metro: "충청남도지사", basic: "공주시장" },
+            { company: "유진", name: "세종", address: "세종특별자치시 금남면 안금로 351-43", metro: "세종특별자치시장", basic: "해당없음" },
+            { company: "유진", name: "K광주", address: "광주광역시 광산구 풍영정길 201", metro: "광주광역시장", basic: "광주 광산구청장" },
+            { company: "유진", name: "나주", address: "전라남도 나주시 남평읍 교원교촌길 22-104", metro: "전라남도지사", basic: "나주시장" },
+            { company: "유진", name: "군산", address: "전라북도 군산시 외항안길 210", metro: "전북특별자치도지사", basic: "군산시장" },
+
+            // --- 동양 (신규 추가) ---
+            { company: "동양", name: "본사", address: "서울특별시 영등포구 국제금융로2길 24, BNK금융타워 3~4층", metro: "서울특별시장", basic: "영등포구청장" },
+            { company: "동양", name: "인천", address: "인천 서구 중봉대로 386번길 19", metro: "인천광역시장", basic: "인천 서구청장" },
+            { company: "동양", name: "안양", address: "경기 군포시 농심로 85", metro: "경기도지사", basic: "군포시장" }, // 실제 주소지 군포 반영
+            { company: "동양", name: "김포", address: "경기 김포시 월곶면 김포대로 2822", metro: "경기도지사", basic: "김포시장" },
+            { company: "동양", name: "파주", address: "경기 파주시 탄현면 헤이리로 199", metro: "경기도지사", basic: "파주시장" },
+            { company: "동양", name: "원주", address: "강원 원주시 흥업면 사제로 281", metro: "강원특별자치도지사", basic: "원주시장" },
+            { company: "동양", name: "아산", address: "충남 아산시 영인면 아산온천로 16-99", metro: "충청남도지사", basic: "아산시장" },
+            { company: "동양", name: "군산", address: "전북 군산시 외항로 466", metro: "전북특별자치도지사", basic: "군산시장" },
+            { company: "동양", name: "전주", address: "전북 완주군 봉동읍 봉동로 453-30", metro: "전북특별자치도지사", basic: "완주군수" }, // 실제 주소지 완주 반영
+            { company: "동양", name: "제주", address: "제주특별자치도 제주시 선반로14길 10", metro: "제주특별자치도지사", basic: "해당없음" }, // 제주시 행정시 반영
+            { company: "동양", name: "대구", address: "경북 경산시 진량읍 동자1길 50", metro: "경상북도지사", basic: "경산시장" }, // 실제 주소지 경산 반영
+            { company: "동양", name: "창원", address: "경남 창원시 성산구 적현로 279번길 6", metro: "경상남도지사", basic: "창원시장" },
+            { company: "동양", name: "김해", address: "경남 김해시 한림면 김해대로 1538번길 41", metro: "경상남도지사", basic: "김해시장" },
+            { company: "동양", name: "양산", address: "경남 양산시 유산공단3길 7", metro: "경상남도지사", basic: "양산시장" },
+            { company: "동양", name: "울산", address: "울산광역시 울주군 웅촌면 웅촌로 607-31", metro: "울산광역시장", basic: "울산 울주군수" }, // 주소지 울주군 반영
+            { company: "동양", name: "서부산", address: "부산 강서구 과학산단로 141", metro: "부산광역시장", basic: "부산 강서구청장" },
+            { company: "동양", name: "부산", address: "부산 서구 원양로 268", metro: "부산광역시장", basic: "부산 서구청장" },
+            { company: "동양", name: "정관", address: "부산 기장군 정관읍 산단7로 8-19", metro: "부산광역시장", basic: "부산 기장군수" },
+            { company: "동양", name: "부산골재", address: "부산광역시 서구 원양로 291-1", metro: "부산광역시장", basic: "부산 서구청장" },
+            { company: "동양", name: "서부산골재", address: "부산광역시 강서구 과학산단로 141", metro: "부산광역시장", basic: "부산 강서구청장" }
         ];
 
         // 리스트 요약용 헬퍼 (상단 카드용)
@@ -253,7 +261,6 @@
         // 공약 상세 렌더링 헬퍼 (아코디언용)
         function renderPledgesHTML(candidates) {
             return candidates.map(c => {
-                // 공약이 없거나 공천중이면 빈칸(공란) 처리
                 if (!c.pledges || c.pledges.length === 0 || c.name === '공천중') {
                     return `
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm opacity-60">
@@ -264,7 +271,6 @@
                     </div>`;
                 }
 
-                // 공약이 있는 경우
                 const pledgeItems = c.pledges.map(p => `<li>${p}</li>`).join('');
                 return `
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -284,10 +290,15 @@
         // 리스트 렌더링 함수
         function renderList(filterText = "") {
             container.innerHTML = "";
-            const filtered = factories.filter(f => f.name.includes(filterText));
+            
+            // 현재 선택된 회사와 검색어로 필터링
+            const filtered = factories.filter(f => 
+                f.company === currentCompany && 
+                f.name.includes(filterText)
+            );
 
             if(filtered.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 text-slate-400">검색된 사업장이 없습니다.</div>`;
+                container.innerHTML = `<div class="text-center py-10 text-slate-400">해당하는 사업장이 없습니다.</div>`;
                 return;
             }
 
@@ -303,10 +314,10 @@
                 };
 
                 const basicElectionSummaryHTML = site.basic === "해당없음" 
-                    ? `<span class="text-sm text-slate-400 italic">기초단체장 선거 없음 (단층제)</span>`
+                    ? `<span class="text-sm text-slate-400 italic">기초단체장 선거 없음 (단층제/행정시)</span>`
                     : `
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                        <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm font-semibold w-28 text-center shrink-0 border border-indigo-100">${site.basic}</span>
+                        <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm font-semibold w-full sm:w-40 whitespace-nowrap text-center shrink-0 border border-indigo-100">${site.basic}</span>
                         <div class="text-sm tracking-tight flex flex-wrap items-center">
                             ${renderCandidateLine(basicCands)}
                         </div>
@@ -316,20 +327,21 @@
                 card.innerHTML = `
                     <div class="p-5 flex flex-col lg:flex-row justify-between gap-6">
                         <!-- Left: 사업장 정보 -->
-                        <div class="flex flex-col justify-center min-w-[250px]">
+                        <div class="flex flex-col justify-center lg:w-80 shrink-0">
                             <div class="text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+                                <span class="text-sm font-semibold px-2 py-0.5 rounded ${site.company === '유진' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'}">${site.company}</span>
                                 ${site.name}
                             </div>
                             <div class="text-sm text-slate-500 flex items-center gap-1">
-                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                ${site.address || site.정주}
+                                <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <span class="break-keep">${site.address}</span>
                             </div>
                         </div>
 
                         <!-- Right: 선거 정보 -->
-                        <div class="flex-grow flex flex-col gap-3 lg:pl-6 lg:border-l border-slate-100 justify-center">
+                        <div class="flex-grow flex flex-col gap-3 lg:pl-6 lg:border-l border-slate-100 justify-center min-w-0">
                             <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                                <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-sm font-semibold w-28 text-center shrink-0 border border-blue-100">${site.metro}</span>
+                                <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-sm font-semibold w-full sm:w-40 whitespace-nowrap text-center shrink-0 border border-blue-100">${site.metro}</span>
                                 <div class="text-sm tracking-tight flex flex-wrap items-center">
                                     ${renderCandidateLine(metroCands)}
                                 </div>
@@ -373,13 +385,36 @@
             });
         }
 
+        // 탭 버튼 클릭 이벤트 처리 함수
+        function updateTabs(selectedCompany) {
+            currentCompany = selectedCompany;
+            
+            const btnEugene = document.getElementById('tab-eugene');
+            const btnTongyang = document.getElementById('tab-tongyang');
+
+            if (selectedCompany === '유진') {
+                btnEugene.className = "flex-1 md:w-32 py-2 text-sm font-bold rounded-lg bg-white text-blue-700 shadow-sm transition-all border border-slate-100";
+                btnTongyang.className = "flex-1 md:w-32 py-2 text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-700 transition-all border border-transparent";
+            } else {
+                btnTongyang.className = "flex-1 md:w-32 py-2 text-sm font-bold rounded-lg bg-white text-blue-700 shadow-sm transition-all border border-slate-100";
+                btnEugene.className = "flex-1 md:w-32 py-2 text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-700 transition-all border border-transparent";
+            }
+
+            // 탭을 바꿨을 때는 검색어를 유지하며 렌더링
+            renderList(document.getElementById('searchInput').value);
+        }
+
         // 초기 렌더링
         renderList();
 
-        // 검색 이벤트 리스너
+        // 이벤트 리스너 등록
         document.getElementById('searchInput').addEventListener('input', (e) => {
             renderList(e.target.value);
         });
+
+        document.getElementById('tab-eugene').addEventListener('click', () => updateTabs('유진'));
+        document.getElementById('tab-tongyang').addEventListener('click', () => updateTabs('동양'));
+
     </script>
 </body>
 </html>
