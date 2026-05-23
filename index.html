@@ -269,7 +269,7 @@
                     <span class="font-medium ${c.name === '공천중' ? 'text-slate-400' : 'text-slate-800'}">${c.name}</span>
                     ${getStatusBadge(c.status || '')}
                 </span>`
-            ).join('<span class="text-slate-200 mx-3">|</span>');
+            ).join('<span class="hidden sm:inline text-slate-200 mx-3">|</span>');
         }
 
         // 공약 상세 렌더링 헬퍼 (이력 추가)
@@ -348,7 +348,7 @@
                     : `
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                         <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm font-semibold w-full sm:w-40 whitespace-nowrap text-center shrink-0 border border-indigo-100">${site.basic}</span>
-                        <div class="text-sm tracking-tight flex flex-wrap items-center">
+                        <div class="text-sm tracking-tight flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-1.5 sm:gap-0">
                             ${renderCandidateLine(basicCands)}
                         </div>
                     </div>
@@ -372,7 +372,7 @@
                         <div class="flex-grow flex flex-col gap-3 lg:pl-6 lg:border-l border-slate-100 justify-center min-w-0">
                             <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                                 <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-sm font-semibold w-full sm:w-40 whitespace-nowrap text-center shrink-0 border border-blue-100">${site.metro}</span>
-                                <div class="text-sm tracking-tight flex flex-wrap items-center">
+                                <div class="text-sm tracking-tight flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-1.5 sm:gap-0">
                                     ${renderCandidateLine(metroCands)}
                                 </div>
                             </div>
